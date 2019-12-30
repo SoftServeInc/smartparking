@@ -1,0 +1,75 @@
+version: '3'
+
+services:
+  video-server1:
+    build: ./video_server
+    image: video-server:1.0
+    ports:
+      - "555:554"
+      - "8091:8090"
+    volumes:
+      - ./video_server/entrypoint.sh:/entrypoint.sh
+      - ./video_server/ffserver.conf:/etc/ffserver.conf
+      - ./video_server/data/2c/camera1:/data/
+    restart: always
+    container_name: video-server1
+
+  video-server2:
+    build: ./video_server
+    image: video-server:1.0
+    ports:
+      - "556:554"
+      - "8092:8090"
+    volumes:
+      - ./video_server/entrypoint.sh:/entrypoint.sh
+      - ./video_server/ffserver.conf:/etc/ffserver.conf
+      - ./video_server/data/2c/camera2:/data/
+    restart: always
+    container_name: video-server2
+
+  video-stream-processor1:
+    depends_on:
+      - video-server1
+    volumes:
+      - ./video_stream_processor/configurations/2c/camera1/config.dev.json:/opt/workdir/config.json
+    environment:
+      - LOGLEVEL=INFO
+
+  video-stream-processor2:
+    depends_on:
+      - video-server2
+    volumes:
+      - ./video_stream_processor/configurations/2c/camera2/config.dev.json:/opt/workdir/config.json
+    environment:
+      - LOGLEVEL=INFO
+
+  history-manager1:
+    volumes:
+      - ./history_manager/configurations/2c/camera1/config.dev.json:/opt/workdir/flow/config.json
+    environment:
+      - LOGLEVEL=INFO
+
+  history-manager2:
+    volumes:
+      - ./history_manager/configurations/2c/camera2/config.dev.json:/opt/workdir/flow/config.json
+    environment:
+      - LOGLEVEL=INFO
+
+  core-engine:
+    volumes:
+      - ./core_engine/configurations/2c_config.dev.json:/opt/workdir/flow/config.json
+      - ./core_engine/configurations/reservation.dev.json:/opt/workdir/flow/reservation.json
+    environment:
+      - LOGLEVEL=INFO
+
+  model1:
+    volumes:
+      - ./model/model_configurations/2c/camera1/model_config.dev.json:/opt/model/model_configurations/model_config.json
+    environment:
+      - LOGLEVEL=INFO
+
+  model2:
+    volumes:
+      - ./model/model_configurations/2c/camera2/model_config.dev.json:/opt/model/model_configurations/model_config.json
+    environment:
+      - LOGLEVEL=INFO

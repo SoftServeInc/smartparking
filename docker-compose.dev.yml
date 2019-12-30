@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  video-server:
+    build: ./video_server
+    image: video-server:1.0
+    ports:
+      - "554:554"
+      - "8090:8090"
+    volumes:
+      - ./video_server/entrypoint.sh:/entrypoint.sh
+      - ./video_server/ffserver.conf:/etc/ffserver.conf
+      - ./video_server/data:/data/
+    restart: always
+    container_name: video-server
+
+  video-stream-processor:
+    depends_on:
+      - video-server
+    volumes:
+      - ./video_stream_processor/configurations/config.dev.json:/opt/workdir/config.json
+    environment:
+      - LOGLEVEL=INFO
+
+  history-manager:
+    volumes:
+      - ./history_manager/configurations/config.dev.json:/opt/workdir/flow/config.json
+    environment:
+      - LOGLEVEL=INFO
+
+  core-engine:
+    volumes:
+      - ./core_engine/configurations/config.dev.json:/opt/workdir/flow/config.json
+      - ./core_engine/configurations/reservation.dev.json:/opt/workdir/flow/reservation.json
+    environment:
+      - LOGLEVEL=INFO
+
+  model:
+    volumes:
+      - ./model/model_configurations/model_config.dev.json:/opt/model/model_configurations/model_config.json
+    environment:
+      - LOGLEVEL=INFO

@@ -1,0 +1,6 @@
+numpy
+opencv-python
+paho.mqtt
+pillow
+tensorflow==1.13.1
+Keras==2.2.4 

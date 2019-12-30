@@ -1,0 +1,7 @@
+{
+  "video_url": "http://video-server1:8090/sample.mp4",
+  "ffmpeg_configurations": "",
+  "quality": 2,
+  "interval": 1.0,
+  "image_format": "jpg"
+}

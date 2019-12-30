@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+  video-stream-processor:
+    volumes:
+      - ./video_stream_processor/configurations/config.prod.json:/opt/workdir/config.json
+    environment:
+      - LOGLEVEL=INFO
+    logging:
+      driver: journald
+
+  history-manager:
+    volumes:
+      - ./history_manager/configurations/config.prod.json:/opt/workdir/flow/config.json
+    environment:
+      - LOGLEVEL=INFO
+    logging:
+      driver: journald
+
+  core-engine:
+    volumes:
+      - ./core_engine/configurations/config.prod.json:/opt/workdir/flow/config.json
+      - ./core_engine/configurations/reservation.prod.json:/opt/workdir/flow/reservation.json
+    environment:
+      - LOGLEVEL=INFO
+    logging:
+      driver: journald
+
+  mosquitto:
+    logging:
+      driver: journald
+
+  model:
+    volumes:
+      - ./model/model_configurations/model_config.prod.json:/opt/model/model_configurations/model_config.json
+    environment:
+      - LOGLEVEL=INFO
+    logging:
+      driver: journald

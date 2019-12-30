@@ -1,0 +1,7 @@
+{
+  "video_url": "http://127.0.0.1",
+  "ffmpeg_configurations": "-rtsp_transport tcp -stimeout 10000000",
+  "quality": 2,
+  "interval": 1.0,
+  "image_format": "jpg"
+}

@@ -1,0 +1,10 @@
+{
+  "strategy": "fs",
+  "client_id": "history_manager2",
+  "mq_topic": "/plugins/video/camera2",
+  "mq_host": "mosquitto",
+  "mq_port": 1883,
+  "sleep_duration": 1.0,
+  "save_each": 300,
+  "exclude_time": ""
+}

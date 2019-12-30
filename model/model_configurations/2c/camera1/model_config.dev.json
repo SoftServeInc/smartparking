@@ -1,0 +1,8 @@
+{
+  "camera_img_config_refresh_duration": 3600,
+  "sleep_duration": 1.0,
+  "client_id": "model_publisher1",
+  "mq_topic": "/plugins/video/camera1",
+  "mq_host": "mosquitto",
+  "mq_port": 1883
+}

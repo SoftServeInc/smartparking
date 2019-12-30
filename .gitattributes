@@ -1,0 +1,4 @@
+cd filter=lfs diff=lfs merge=lfs -text
+model/trained_models/main/weights.h5 filter=lfs diff=lfs merge=lfs -text
+model/trained_models/behind_trees/weights.h5 filter=lfs diff=lfs merge=lfs -text
+*.h5 filter=lfs diff=lfs merge=lfs -text

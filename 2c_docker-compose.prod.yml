@@ -1,0 +1,68 @@
+version: '3'
+
+services:
+  video-stream-processor1:
+    volumes:
+      - ./video_stream_processor/configurations/2c/camera1/config.prod.json:/opt/workdir/config.json
+    environment:
+      - LOGLEVEL=INFO
+    logging:
+      driver: journald
+
+  video-stream-processor2:
+    volumes:
+      - ./video_stream_processor/configurations/2c/camera2/config.prod.json:/opt/workdir/config.json
+    environment:
+      - LOGLEVEL=INFO
+    logging:
+      driver: journald
+
+  history-manager1:
+    volumes:
+      - ./history_manager/configurations/2c/camera1/config.prod.json:/opt/workdir/flow/config.json
+    environment:
+      - LOGLEVEL=INFO
+    logging:
+      driver: journald
+
+  history-manager2:
+    volumes:
+      - ./history_manager/configurations/2c/camera2/config.prod.json:/opt/workdir/flow/config.json
+    environment:
+      - LOGLEVEL=INFO
+    logging:
+      driver: journald
+
+  core-engine:
+    volumes:
+      - ./core_engine/configurations/2c_config.prod.json:/opt/workdir/flow/config.json
+      - ./core_engine/configurations/reservation.prod.json:/opt/workdir/flow/reservation.json
+    environment:
+      - LOGLEVEL=INFO
+    logging:
+      driver: journald
+
+  mosquitto:
+    logging:
+      driver: journald
+
+  model1:
+    volumes:
+      - ./model/model_configurations/2c/camera1/model_config.prod.json:/opt/model/model_configurations/model_config.json
+    environment:
+      - LOGLEVEL=INFO
+    logging:
+      driver: journald
+
+  model2:
+    volumes:
+      - ./model/model_configurations/2c/camera2/model_config.prod.json:/opt/model/model_configurations/model_config.json
+    environment:
+      - LOGLEVEL=INFO
+    logging:
+      driver: journald
+
+networks:
+  default:
+    external:
+      name: root_default

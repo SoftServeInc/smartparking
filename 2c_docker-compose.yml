@@ -1,0 +1,90 @@
+version: '3'
+
+services:
+  video-stream-processor1:
+    build: ./video_stream_processor
+    image: video-stream-processor:1.0
+    volumes:
+      - ${IMAGES_OUTPUT_DIR}/camera1:/opt/workdir/output_images/
+      - ./utils:/opt/workdir/utils
+    container_name: video-stream-processor1
+
+  video-stream-processor2:
+    build: ./video_stream_processor
+    image: video-stream-processor:1.0
+    volumes:
+      - ${IMAGES_OUTPUT_DIR}/camera2:/opt/workdir/output_images/
+      - ./utils:/opt/workdir/utils
+    container_name: video-stream-processor2
+
+  history-manager1:
+    build: ./history_manager
+    image: history-manager:1.0
+    depends_on:
+      - mosquitto
+      - model1
+    volumes:
+      - ./utils:/opt/workdir/flow/utils
+      - ${IMAGES_OUTPUT_DIR}/camera1:/opt/workdir/input_images/
+      - ${ARCHIVE_DIR}/camera1:/opt/workdir/archive_images/
+    container_name: history-manager1
+
+  history-manager2:
+    build: ./history_manager
+    image: history-manager:1.0
+    depends_on:
+      - mosquitto
+      - model2
+    volumes:
+      - ./utils:/opt/workdir/flow/utils
+      - ${IMAGES_OUTPUT_DIR}/camera2:/opt/workdir/input_images/
+      - ${ARCHIVE_DIR}/camera2:/opt/workdir/archive_images/
+    container_name: history-manager2
+
+  core-engine:
+    build: ./core_engine
+    image: core-engine:1.0
+    depends_on:
+      - mosquitto
+      - model1
+      - model2
+    volumes:
+      - ./utils:/opt/workdir/flow/utils
+    container_name: core-engine
+
+  mosquitto:
+    build: ./mosquitto
+    image: mosquitto:1.0
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    container_name: mosquitto
+
+  model1:
+    build: ./model
+    image: model:1.0
+    depends_on:
+      - mosquitto
+      - video-stream-processor1
+    volumes:
+      - ./model/pklot_configurations/2c/camera1:/opt/model/pklot_configurations/
+      - ${IMAGES_OUTPUT_DIR}/camera1:/opt/model/pklot_images/
+      - ./model/trained_models:/opt/model/trained_models/
+      - ./utils:/opt/model/utils
+    container_name: model1
+
+  model2:
+    build: ./model
+    image: model:1.0
+    depends_on:
+      - mosquitto
+      - video-stream-processor2
+    volumes:
+      - ./model/pklot_configurations/2c/camera2:/opt/model/pklot_configurations/
+      - ${IMAGES_OUTPUT_DIR}/camera2:/opt/model/pklot_images/
+      - ./model/trained_models:/opt/model/trained_models/
+      - ./utils:/opt/model/utils
+    container_name: model2
