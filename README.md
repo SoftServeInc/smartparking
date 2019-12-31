@@ -35,7 +35,7 @@ sudo apt-get install git-lfs -y
 Run:
 
 ```
-git clone https://github.com/SoftServeSAG/smartparking.git
+git clone https://github.com/SoftServeInc/smartparking.git
 cd smartparking
 git lfs install
 ```
