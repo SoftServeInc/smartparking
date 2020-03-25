@@ -21,10 +21,7 @@ import time
 from datetime import datetime
 
 from paho.mqtt.publish import single
-from model_core import (load_all_parking_models,
-                        predict, batch_predict)
-from crop_helpers import (map_models_to_ids,
-                          collect_input)
+from model_core import ParkingInference
 from utils.logging_utils import create_logger
 
 logger = create_logger('model')
@@ -46,22 +43,20 @@ def execute(config_json):
     port = config.get('mq_port')
     loop_counter = 0
     last_modified = 0
-    img_config_refresh_time = 0
+    parking_coords_refresh_time = 0
 
     while True:
         logger.debug('Iteration started')
         start_time = time.time()
-        if start_time - img_config_refresh_time > img_config_refresh_duration:
+        if start_time - parking_coords_refresh_time > img_config_refresh_duration:
             logger.debug('Reloading parking configuration')
-            img_config = get_latest_config(os.environ['CAMERA_IMG_CONFIG_FOLDER'])
-            if not img_config:
+            parking_coords = get_latest_config(os.environ['CAMERA_IMG_CONFIG_FOLDER'])
+            if not parking_coords:
                 logger.debug('Found no parking configuration file')
                 time.sleep(delay)
                 continue
 
-            img_config_refresh_time = start_time
-            models_to_ids = map_models_to_ids(img_config)
-            load_all_parking_models(os.environ['MODELS_PATH'])
+            parking_coords_refresh_time = start_time
 
         logger.debug('Looking for a new file')
         processing_start_time = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
@@ -83,9 +78,10 @@ def execute(config_json):
             continue
 
         logger.debug('Processing file %s', current_img_path)
-        batch_input = collect_input(current_img_path, img_config)
-        logger.debug('Extracting for file %s finished', current_img_path)
-        pklot_map = batch_predict(batch_input, models_to_ids)
+        inference = ParkingInference(inference_config=os.environ['INFERENCE_CONFIG'],
+                                     parking_coords=parking_coords,
+                                     model_path=os.environ['MODEL_PATH'])
+        pklot_map = inference.predict(current_img_path)
         logger.debug('Prediction for file %s finished', current_img_path)
 
         number_of_free_places = 0

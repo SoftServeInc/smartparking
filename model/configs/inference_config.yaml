@@ -1,0 +1,11 @@
+apply_cover: True
+border_width: 5
+size: [960, 576]
+binary_threshold: 0.5
+occupation_threshold: 0.5
+
+load_size:
+        width: 1280
+        height: 720
+
+use_cuda: False
