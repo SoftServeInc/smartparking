@@ -16,8 +16,11 @@ class ParkingInference:
         with open(inference_config) as file:
             self.config = yaml.load(file, Loader=yaml.FullLoader)
 
-        self.parking_lots = parking_coords
-        self.image_size = (self.parking_lots['frame']['height'], self.parking_lots['frame']['width'])
+        self.parking_lots = {'parking_lot_coords': {item['id']:
+                                list(zip(map(lambda x: int(float(x)), item['xn'].split(';')),
+                                         map(lambda x: int(float(x)), item['yn'].split(';'))))
+                                            for item in parking_coords[0]['annotations']}}
+        self.image_size = (self.config['frame']['height'], self.config['frame']['width'])
         self.device = 'cuda:0' if self.config['use_cuda'] else 'cpu'
         self.model = self.load_model(model_path)
         self.binary_threshold = self.config['binary_threshold']
@@ -32,7 +35,7 @@ class ParkingInference:
 
         return model
 
-    def load_image(self, image_path, size, cover=None):
+    def load_image(self, image_path, size):
 
         image = read_img(image_path)
         image = Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])(image=image)['image']
@@ -42,8 +45,7 @@ class ParkingInference:
         cover = get_preprocessed_mask(self.image_size,
                                       parking_lots=self.parking_lots,
                                       border_width=border_width,
-                                      for_metrics=False,
-                                      pklot_cover=cover)
+                                      for_metrics=False)
         image = image * cover
         image = cv2.resize(image, tuple(size))
         image = torch.from_numpy(np.transpose(image, (2, 0, 1)).astype('float32')).unsqueeze(0)
@@ -54,8 +56,7 @@ class ParkingInference:
 
         with torch.no_grad():
             image = self.load_image(image_path,
-                                    size=self.config['size'],
-                                    cover=self.config['apply_cover'])
+                                    size=self.config['size'])
             image = image.to(self.device)
             predict = self.model(image)
             predict = torch.sigmoid(predict).squeeze().squeeze().detach().cpu().numpy()
@@ -63,7 +64,7 @@ class ParkingInference:
             if self.binary_threshold:
                 predict = predict > self.binary_threshold
 
-        border_width = int(self.border_width * self.parking_lots['frame']['width'] / self.load_size['width'])
+        border_width = int(self.border_width * self.config['frame']['width'] / self.load_size['width'])
         cover = get_preprocessed_mask(self.image_size,
                                       parking_lots=self.parking_lots,
                                       border_width=border_width,
@@ -88,21 +89,15 @@ def read_img(path, mask=False):
     return image
 
 
-def get_preprocessed_mask(image_size, parking_lots, border_width=15, pklot_cover=True,
-                          for_metrics=False):
+def get_preprocessed_mask(image_size, parking_lots, border_width=15, for_metrics=False):
     mask = np.zeros(image_size).astype('uint8')
 
-    if not pklot_cover:
-        pts = np.array(parking_lots['parking_coords'])
-        cv2.fillPoly(mask, [pts], color=1)
-
-    else:
-        parking_lots_coords = parking_lots['parking_lot_coords']
-        for pklot_id, pts in parking_lots_coords.items():
-            pts = np.array(pts)
-            color = int(pklot_id) if for_metrics else 1
-            cv2.fillPoly(mask, [pts], color=color)
-            cv2.polylines(mask, [pts], True, 0, border_width)
+    parking_lots_coords = parking_lots['parking_lot_coords']
+    for pklot_id, pts in parking_lots_coords.items():
+        pts = np.array(pts)
+        color = int(pklot_id) if for_metrics else 1
+        cv2.fillPoly(mask, [pts], color=color)
+        cv2.polylines(mask, [pts], True, 0, border_width)
 
     if not for_metrics:
         mask = mask[:, :, np.newaxis]
