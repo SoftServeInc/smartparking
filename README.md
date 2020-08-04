@@ -40,7 +40,7 @@ cd smartparking
 git lfs install
 ```
 
-Please note that `*.h5` files are stored on Git LFS because of their size.
+Please note that large model files are stored on Git LFS because of their size.
 
 2\. Install Docker and setup a cron to clean up the archive directory:
 
@@ -216,12 +216,6 @@ For two cameras, run:
 
 ```
 docker stop video-server1 video-server2 mosquitto video-stream-processor1 video-stream-processor2 model1 model2 history-manager1 history-manager2 core-engine
-```
-
-To run unit tests:
-
-```
-./run_tests.sh
 ```
 
 ## <a name="runownparking"></a>How to Run Smart Parking with Your Own Parking Map

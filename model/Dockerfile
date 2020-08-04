@@ -14,12 +14,11 @@ WORKDIR /opt/model/
 
 COPY model_core.py /opt/model/
 COPY model_wrapper.py /opt/model/
-COPY configs/inference_config.yaml /opt/model/configs/inference_config.yaml
 
-ENV MODEL_PATH /opt/model/trained_models/model.zip
+ENV MODEL_PATH /opt/model/trained_models/
 ENV MODEL_CONFIG /opt/model/model_configurations/model_config.json
-ENV SOURCE_IMG_FOLDER /opt/model/pklot_images/
+ENV INFERENCE_CONFIG /opt/model/inference_configurations/inference_config.yaml
 ENV CAMERA_IMG_CONFIG_FOLDER /opt/model/pklot_configurations/
-ENV INFERENCE_CONFIG /opt/model/configs/inference_config.yaml
+ENV SOURCE_IMG_FOLDER /opt/model/pklot_images/
 
 ENTRYPOINT ["python3", "model_wrapper.py"]

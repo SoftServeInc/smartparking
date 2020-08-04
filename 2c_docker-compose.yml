@@ -70,6 +70,7 @@ services:
       - mosquitto
       - video-stream-processor1
     volumes:
+      - ./model/inference_configurations:/opt/model/inference_configurations/
       - ./model/pklot_configurations/2c/camera1:/opt/model/pklot_configurations/
       - ${IMAGES_OUTPUT_DIR}/camera1:/opt/model/pklot_images/
       - ./model/trained_models:/opt/model/trained_models/
@@ -83,6 +84,7 @@ services:
       - mosquitto
       - video-stream-processor2
     volumes:
+      - ./model/inference_configurations:/opt/model/inference_configurations/
       - ./model/pklot_configurations/2c/camera2:/opt/model/pklot_configurations/
       - ${IMAGES_OUTPUT_DIR}/camera2:/opt/model/pklot_images/
       - ./model/trained_models:/opt/model/trained_models/

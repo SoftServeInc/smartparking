@@ -49,6 +49,7 @@ services:
       - mosquitto
       - video-stream-processor
     volumes:
+      - ./model/inference_configurations:/opt/model/inference_configurations/
       - ./model/pklot_configurations:/opt/model/pklot_configurations/
       - ${IMAGES_OUTPUT_DIR}:/opt/model/pklot_images/
       - ./model/trained_models:/opt/model/trained_models/

@@ -20,8 +20,7 @@ groupadd docker
 usermod -aG docker $USER
 /etc/init.d/docker restart
 
+apt-get install python3 -y
 apt-get install mosquitto-clients -y
-apt-get install python3-pip -y
-pip3 install pytest numpy
 
-(crontab -l 2>/dev/null; echo "0 */6 * * * /usr/bin/python $SMARTPARKING_DIR/history_manager/clean_archive_dir.py 192") | crontab -
+(crontab -l 2>/dev/null; echo "0 */6 * * * /usr/bin/python3 $SMARTPARKING_DIR/history_manager/clean_archive_dir.py 192") | crontab -

@@ -11,6 +11,6 @@ sudo apt-get install python3 python3-pip libsm6 libxext6 libxrender-dev -y
 sudo pip3 install -U pip
 sudo pip3 install virtualenv
 cd $SMARTPARKING_DIR
-virtualenv venv
+virtualenv venv --python=python3
 source venv/bin/activate
 pip3 install -r model/requirements.txt
