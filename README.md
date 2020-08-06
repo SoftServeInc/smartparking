@@ -7,9 +7,19 @@ ML models will process the video stream and analyze each parking slot availabili
 Instructions below provide a detailed description of how to run a demo version of the application,
 as well as how to apply the solution to your custom parking.  
 
-1. [Getting Started](#gettingstarted1)
+1. [Getting Started](#gettingstarted)
 2. [How to Run Smart Parking as a Demo (Use Default Parking Map)](#rundemo)
+   - [For One Camera](#rundemo1)
+   - [For Two Cameras](#rundemo2)
+   - [Logging](#rundemologging)
 3. [How to Run Smart Parking with Your Own Parking Map](#runownparking)
+   - [Pre-Requisites](#prerequisites)
+   - [Parking Map](#parkingmap)
+   - [Sample Video](#samplevideo)
+   - [Models](#models)
+   - [For One Camera](#runownparking1)
+   - [For Two Cameras](#runownparking2)
+   - [Logging](#runownparkinglogging)
 4. [External Integrations](#externalintegrations)
 5. [Configuration](#configuration1)
 6. [Contributing](#contributing)
@@ -22,7 +32,7 @@ The diagram below represents a high-level architecture.
 
 ## <a name="gettingstarted1"></a>Getting Started
 
-All commands and scripts below are for Ubuntu, but they may be easily adopted for any
+All commands and deployment scripts below are for Ubuntu, but they may be easily adopted for any
 other Linux.
 
 1\. Clone Git repository:
@@ -98,12 +108,9 @@ There is a possibility to run the solution with two separate cameras
 (a case when one camera is not able to cover the whole parking) - see details
 below.
 
-### <a name="running1"></a>Running Everything Up
+### <a name="running"></a>Running Everything Up
 
-By default, logging level for all Python applications is `INFO`, but if needed
-you can change it in `docker-compose.dev.yml`.
-
-#### For One Camera
+### <a name="rundemo1"></a>For One Camera
 
 To run everything locally, go to `smartparking` folder and run:
 
@@ -180,7 +187,7 @@ Now you are all set.  To stop all containers, run:
 docker stop video-server mosquitto video-stream-processor model history-manager core-engine
 ```
 
-#### For Two Cameras
+### <a name="rundemo2"></a>For Two Cameras
 
 To run everything locally, go to `smartparking` folder and run:
 
@@ -269,6 +276,17 @@ Now you are all set.  To stop all containers, run:
 docker stop video-server1 video-server2 mosquitto video-stream-processor1 video-stream-processor2 model1 model2 history-manager1 history-manager2 core-engine
 ```
 
+### <a name="rundemologging"></a>Logging
+
+By default, logging level for all Python applications is `INFO`, but if needed
+you can change it in `docker-compose.dev.yml`.
+
+To see logs for a container, run:
+
+```
+docker logs <container name>
+```
+
 ## <a name="runownparking"></a>How to Run Smart Parking with Your Own Parking Map
 
 This is the case when you want to use it with your real parking.
@@ -277,7 +295,7 @@ There is a possibility to run the solution with two separate cameras
 (a case when one camera is not able to cover the whole parking) - see details
 below.
 
-### Pre-Requisites
+### <a name="prerequisites"></a>Pre-Requisites
 
 Any IP camera or two cameras that output ffmpeg stream.  For the default parking map
 the following camera was used: Dahua DH-IPC-HFW5830EP-Z (8MP, 3840х2160).
@@ -288,7 +306,7 @@ won't change.  To get started you don't need the actual video streams, but you
 need several screenshots (at least three, but more is better).  Try to choose
 shots with the different composition of free/occupied parking slots.
 
-### Parking Map
+### <a name="parkingmap"></a>Parking Map
 
 Now you need to create a parking map (one for each camera).
 
@@ -383,7 +401,7 @@ See default parking map as an example: `sloth/pklot_config.json`.
 
 ![SlothScreenshot](sloth_screenshot.png)
 
-### Sample Video
+### <a name="samplevideo"></a>Sample Video
 
 To get started you can setup a video server and stream a sample video (instead of
 using a real camera).  If you have already made several representative shots,
@@ -425,7 +443,7 @@ To stop the video server, run:
 docker stop video-server
 ```
 
-### Models
+### <a name="models"></a>Models
 
 You can start with the default model `main`.
 
@@ -439,7 +457,7 @@ or you may have several models shared beween different cameras.
 
 ### Running Everything Up
 
-#### For One Camera
+### <a name="runownparking11"></a>For One Camera
 
 To run everything locally, follow these steps:
 
@@ -449,13 +467,13 @@ To run everything locally, follow these steps:
 2\. Put your actual model(s) into `model/trained_models/` folder, each model
 as a separate `<model_name>.zip` archive.
 
-3\. See [Running Everything Up](#running1) section above.  It assumes using
+3\. See [Running Everything Up](#running) section above.  It assumes using
 a fake video server configured above.
 
 When you are ready to run it on a dedicated ("production") environment with a real camera,
 follow these steps:
 
-1\. Follow instructions from [Getting Started](#gettingstarted1) section above.
+1\. Follow instructions from [Getting Started](#gettingstarted) section above.
 
 2\. Additionally install Supervisor:
 
@@ -463,14 +481,14 @@ follow these steps:
 sudo apt-get install supervisor -y
 ```
 
-3\. Change default configuration.  See [Configuration](#configuration1) section below
+3\. Change default configuration.  See [Configuration](#configuration) section below
 for explanation of all configuration values.  Most of them should be fine, but
 you need to set at least two things:
 
 - `video_url` in `video_stream_processor/configurations/config.prod.json` pointing it
   to the stream of your real camera.
 - List of "reserved" parking slots in `core_engine/configurations/reservation.prod.json`.
-  See [Parking Slots Reservation](#reservation1) section below for details.
+  See [Parking Slots Reservation](#reservation) section below for details.
 
 4\. Put your parking configuration as
 `model/pklot_configurations/pklot_config.json`.  Please note that the file is
@@ -564,7 +582,7 @@ To start them again run:
 supervisorctl start all
 ```
 
-#### For Two Cameras
+### <a name="runownparking2"></a>For Two Cameras
 
 To run everything locally, follow these steps:
 
@@ -575,13 +593,13 @@ To run everything locally, follow these steps:
 2\. Put your actual model(s) into `model/trained_models/` folder, each model
 as a separate `<model_name>.zip` archive.
 
-3\. See [Running Everything Up](#running1) section above.  It assumes using
+3\. See [Running Everything Up](#running) section above.  It assumes using
 fake video servers configured above.
 
 When you are ready to run it on a dedicated ("production") environment with real cameras,
 follow these steps:
 
-1\. Follow instructions from [Getting Started](#gettingstarted1) section above.
+1\. Follow instructions from [Getting Started](#gettingstarted) section above.
 
 2\. Additionally install Supervisor:
 
@@ -589,7 +607,7 @@ follow these steps:
 sudo apt-get install supervisor -y
 ```
 
-3\. Change default configuration.  See [Configuration](#configuration1) section below
+3\. Change default configuration.  See [Configuration](#configuration) section below
 for explanation of all configuration values.  Most of them should be fine, but
 you need to set at least two things:
 
@@ -597,7 +615,7 @@ you need to set at least two things:
   and `video_stream_processor/2c/camera2/configurations/config.prod.json`
   pointing them to the streams of your real cameras.
 - List of "reserved" parking slots in `core_engine/configurations/reservation.prod.json`.
-  See [Parking Slots Reservation](#reservation1) section below for details.
+  See [Parking Slots Reservation](#reservation) section below for details.
 
 4\. Put your parking configurations as
 `model/pklot_configurations/2c/camera1/pklot_config.json` and
@@ -706,9 +724,22 @@ To start them again run:
 supervisorctl start all
 ```
 
+### <a name="runownparkinglogging"></a>Logging
+
+By default, logging level for all Python applications is `INFO`, but if needed
+you can change it in `docker-compose.dev.yml`.
+
+Log locations for each container are configured in `supervisord.conf` and
+`2c_supervisord.conf` like:
+
+```
+stdout_logfile=/tmp/history-manager-container.log
+stderr_logfile=/tmp/history-manager-container.err.log
+```
+
 ## <a name="externalintegrations"></a>External Integrations
 
-### <a name="smartgate1"></a>Smart Gate
+### <a name="smartgate"></a>Smart Gate
 
 There is a possibility to track how many additional cars are currently moving
 around the parking, but didn't occupy any parking slot yet.  There is a special
@@ -729,7 +760,7 @@ subscribe to `/engine` topic.  It may be an integration with some existing syste
 or a separate web application that displays a parking map on a screen near the
 entrance gate.
 
-## <a name="configuration1"></a>Configuration
+## <a name="configuration"></a>Configuration
 
 Each component/container has its own configuration file.  This repo contains two versions
 for each of them: one for local use (has `.dev.json` extension) and another for production
@@ -816,7 +847,7 @@ a separate file for each instance, but the structure is the same).
 }
 ```
 
-### <a name="reservation1"></a>Parking Slots Reservation
+### <a name="reservation"></a>Parking Slots Reservation
 
 You can mark some parking slots as "reserved", so they are not taken into account
 when calculating a number of free slots.  See `core_engine/configurations/reservation.<dev|prod>.json`
