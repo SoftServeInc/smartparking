@@ -7,7 +7,7 @@ from sloth.core import labeltool
 
 LABELS = (
     {'attributes': {'id': [str(i) for i in range(1, 501)],
-                    'model': ['main', 'behind_trees'],
+                    'model': ['main'],
                     'class': 'polygon'},
      'item': 'smartparking.ParkingPolygonItem',
      'inserter': 'smartparking.ParkingPolygonItemInserter',
