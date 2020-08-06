@@ -21,7 +21,7 @@ as well as how to apply the solution to your custom parking.
    - [For Two Cameras](#runownparking2)
    - [Logging](#runownparkinglogging)
 4. [External Integrations](#externalintegrations)
-5. [Configuration](#configuration1)
+5. [Configuration](#configuration)
 6. [Contributing](#contributing)
 7. [License](#license)
 
@@ -30,7 +30,7 @@ The diagram below represents a high-level architecture.
 ![SmartParkingModulesDiagram](SmartParking_v1.0_OpenSource.png)
 
 
-## <a name="gettingstarted1"></a>Getting Started
+## <a name="gettingstarted"></a>Getting Started
 
 All commands and deployment scripts below are for Ubuntu, but they may be easily adopted for any
 other Linux.
@@ -457,7 +457,7 @@ or you may have several models shared beween different cameras.
 
 ### Running Everything Up
 
-### <a name="runownparking11"></a>For One Camera
+### <a name="runownparking1"></a>For One Camera
 
 To run everything locally, follow these steps:
 
