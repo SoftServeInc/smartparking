@@ -1,17 +1,15 @@
 """ Simple wrapper for the model.
-Designed to work inside Docker container.
-Here what it does:
+
+Designed to work inside Docker container.  Here what it does:
 
 1. Loads config (model_config.json) - this file contains such settings as MQ topic to publish,
    MQ host and port, delay in seconds between recognitions, etc.
 2. Looks for the latest file inside parking configurations folder (path was loaded at step 1),
-   reads it. This is a json file, made via Sloth. We are going to use it as a grid to cut individual
-   parking spaces from camera frame.
-3. Using OpenCV, reads in the latest frame from camera.
-4. Using config from step 2, crops, transforms and saves small images of individual parking spaces.
-5. Using trained models classifies all images from step 4 into free or occupied.
-6. Measures some additional information (like execution time), publishes it as a json to MQ topic.
-7. Waits given in the config file delay before next execution loop. The loop is infinite.
+   reads it. This is a json file, made via Sloth. We are going to use it as a grid to cut
+   individual parking spaces from camera frame.
+3. Using trained models classifies the latest frame from camera into free or occupied slots.
+4. Measures some additional information (like execution time), publishes it as a json to MQ topic.
+5. Waits given in the config file delay before next execution loop. The loop is infinite.
 """
 import json
 import ntpath
@@ -21,24 +19,22 @@ import time
 from datetime import datetime
 
 from paho.mqtt.publish import single
-from model_core import (load_all_parking_models,
-                        predict, batch_predict)
-from crop_helpers import (map_models_to_ids,
-                          collect_input)
+from model_core import ParkingInference
 from utils.logging_utils import create_logger
 
 logger = create_logger('model')
 
 
 def execute(config_json):
-    """ Execute full cycle in a loop. Single cycle ends with publishing result json.
+    """ Execute full cycle in a loop. A cycle ends with publishing result json.
 
     :param config_json: model config json
     """
     with open(config_json, 'r') as stream:
         config = json.load(stream)
 
-    img_config_refresh_duration = config.get('camera_img_config_refresh_duration')
+    img_config_refresh_duration = config.get(
+        'camera_img_config_refresh_duration')
     delay = config.get('sleep_duration')
     client_id = config.get('client_id')
     topic = config.get('mq_topic')
@@ -46,25 +42,38 @@ def execute(config_json):
     port = config.get('mq_port')
     loop_counter = 0
     last_modified = 0
-    img_config_refresh_time = 0
+    parking_coords_refresh_time = 0
+    parking_coords = []
+    inferences = {}
 
     while True:
         logger.debug('Iteration started')
         start_time = time.time()
-        if start_time - img_config_refresh_time > img_config_refresh_duration:
+        if (start_time - parking_coords_refresh_time >
+                img_config_refresh_duration):
             logger.debug('Reloading parking configuration')
-            img_config = get_latest_config(os.environ['CAMERA_IMG_CONFIG_FOLDER'])
-            if not img_config:
+            parking_coords = get_latest_config(
+                os.environ['CAMERA_IMG_CONFIG_FOLDER'])
+            if not parking_coords:
                 logger.debug('Found no parking configuration file')
                 time.sleep(delay)
                 continue
 
-            img_config_refresh_time = start_time
-            models_to_ids = map_models_to_ids(img_config)
-            load_all_parking_models(os.environ['MODELS_PATH'])
+            inferences = {}
+            models = list(set(a['model']
+                              for a in parking_coords[0]['annotations']))
+            for model in models:
+                inferences[model] = ParkingInference(
+                    inference_config=os.environ['INFERENCE_CONFIG'],
+                    parking_coords=parking_coords,
+                    model_path=os.environ['MODEL_PATH'],
+                    model_name=model)
+
+            parking_coords_refresh_time = start_time
 
         logger.debug('Looking for a new file')
-        processing_start_time = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+        processing_start_time = datetime.utcnow().strftime(
+            '%Y-%m-%d %H:%M:%S.%f')[:-3]
 
         (current_img_path, source_folder, current_img_last_modified
         ) = get_latest_img_and_folder(os.environ['SOURCE_IMG_FOLDER'])
@@ -77,15 +86,18 @@ def execute(config_json):
         if current_img_last_modified > last_modified:
             last_modified = current_img_last_modified
         else:
-            logger.debug('Got image that is older than the previous. Skipping iteration...')
+            logger.debug('Got image that is older than the previous. '
+                         'Skipping iteration...')
             time.sleep(delay)
             logger.debug('Iteration finished')
             continue
 
         logger.debug('Processing file %s', current_img_path)
-        batch_input = collect_input(current_img_path, img_config)
-        logger.debug('Extracting for file %s finished', current_img_path)
-        pklot_map = batch_predict(batch_input, models_to_ids)
+
+        pklot_map = {}
+        for inference in inferences.values():
+            pklot_map.update(inference.predict(current_img_path))
+
         logger.debug('Prediction for file %s finished', current_img_path)
 
         number_of_free_places = 0
@@ -100,7 +112,8 @@ def execute(config_json):
             'free': number_of_free_places,
             'occupied': number_of_occupied_places
         }
-        processing_time = '{0:.2f} ms'.format((time.time() - start_time) * 1000)
+        processing_time = '{0:.2f} ms'.format(
+            (time.time() - start_time) * 1000)
         metadata_map = {
             'source_folder': os.path.basename(os.path.normpath(source_folder)),
             'source_file': ntpath.basename(current_img_path),
@@ -118,8 +131,9 @@ def execute(config_json):
                keepalive=60)
         logger.debug('Posting into topic finished')
         if loop_counter % 100 == 0:
-            logger.info('Finished a sequence of 100 iterations: %s, model output: %s',
-                        loop_counter, json_response)
+            logger.info(
+                'Finished a sequence of 100 iterations: %s, model output: %s',
+                loop_counter, json_response)
         loop_counter += 1
         logger.debug('Iteration finished')
 

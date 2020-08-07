@@ -12,15 +12,13 @@ RUN pip3 install -r /tmp/requirements.txt
 
 WORKDIR /opt/model/
 
-COPY crop_helpers.py /opt/model/
 COPY model_core.py /opt/model/
-COPY model_helpers.py /opt/model/
 COPY model_wrapper.py /opt/model/
-COPY weather_augmentations.py /opt/model/
 
-ENV MODELS_PATH /opt/model/trained_models/
+ENV MODEL_PATH /opt/model/trained_models/
 ENV MODEL_CONFIG /opt/model/model_configurations/model_config.json
-ENV SOURCE_IMG_FOLDER /opt/model/pklot_images/
+ENV INFERENCE_CONFIG /opt/model/inference_configurations/inference_config.yaml
 ENV CAMERA_IMG_CONFIG_FOLDER /opt/model/pklot_configurations/
+ENV SOURCE_IMG_FOLDER /opt/model/pklot_images/
 
 ENTRYPOINT ["python3", "model_wrapper.py"]
