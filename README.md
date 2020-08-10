@@ -104,9 +104,19 @@ This is the case when you are interested just in a demo and don't plan to use
 it with your real parking.  Instead of a real camera you will use a fake video
 server that streams a sample video in a loop.
 
-There is a possibility to run the solution with two separate cameras
-(a case when one camera is not able to cover the whole parking) - see details
-below.
+Out of the box, there is a possibility to run the solution either with one or two
+separate cameras (a case when one camera is not able to cover the whole parking) -
+see the sections below.
+
+If needed, you can use any number of cameras.  In that case, you need to create
+new configuration files for docker compose and each component.  As a reference,
+see how it was done for two cameras:
+
+```
+find . -name '2c*'
+```
+
+Basically, you need to replicate all those files for three (four, etc.) cameras.
 
 ### <a name="running"></a>Running Everything Up
 
@@ -291,9 +301,19 @@ docker logs <container name>
 
 This is the case when you want to use it with your real parking.
 
-There is a possibility to run the solution with two separate cameras
-(a case when one camera is not able to cover the whole parking) - see details
-below.
+Out of the box, there is a possibility to run the solution either with one or two
+separate cameras (a case when one camera is not able to cover the whole parking) -
+see the sections below.
+
+If needed, you can use any number of cameras.  In that case, you need to create
+new configuration files for docker compose and each component.  As a reference,
+see how it was done for two cameras:
+
+```
+find . -name '2c*'
+```
+
+Basically, you need to replicate all those files for three (four, etc.) cameras.
 
 ### <a name="prerequisites"></a>Pre-Requisites
 
@@ -308,7 +328,8 @@ shots with the different composition of free/occupied parking slots.
 
 ### <a name="parkingmap"></a>Parking Map
 
-Now you need to create a parking map (one for each camera).
+Now you need to create a parking map (one for each camera).  Sloth application is
+used for creation of a parking map, then the map is stored in a json format.
 
 1\. Take a good representative shot from the camera.  See shot of the default
 parking as an example: `sloth/parking_map.jpg`.
@@ -461,7 +482,7 @@ or you may have several models shared beween different cameras.
 
 To run everything locally, follow these steps:
 
-1\. Put your parking configuration as
+1\. Put your parking map configuration as
 `model/pklot_configurations/pklot_config.json`.
 
 2\. Put your actual model(s) into `model/trained_models/` folder, each model
@@ -490,7 +511,7 @@ you need to set at least two things:
 - List of "reserved" parking slots in `core_engine/configurations/reservation.prod.json`.
   See [Parking Slots Reservation](#reservation) section below for details.
 
-4\. Put your parking configuration as
+4\. Put your parking map configuration as
 `model/pklot_configurations/pklot_config.json`.  Please note that the file is
 being periodically reloaded (each hour by default), so you can update it on the host
 on the fly, instead of restarting containers.
