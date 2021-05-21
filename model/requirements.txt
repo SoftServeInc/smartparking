@@ -2,5 +2,5 @@ numpy
 opencv-python
 paho.mqtt
 pillow
-tensorflow==1.13.1
+tensorflow==2.5.0
 Keras==2.2.4 
