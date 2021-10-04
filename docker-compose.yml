@@ -8,6 +8,10 @@ services:
       - ${IMAGES_OUTPUT_DIR}:/opt/workdir/output_images/
       - ./utils:/opt/workdir/utils
     container_name: video-stream-processor
+    deploy:
+      restart_policy:
+       condition: any
+
 
   history-manager:
     build: ./history_manager
@@ -20,6 +24,10 @@ services:
       - ${IMAGES_OUTPUT_DIR}:/opt/workdir/input_images/
       - ${ARCHIVE_DIR}:/opt/workdir/archive_images/
     container_name: history-manager
+    deploy:
+      restart_policy:
+       condition: any
+
 
   core-engine:
     build: ./core_engine
@@ -30,6 +38,10 @@ services:
     volumes:
       - ./utils:/opt/workdir/flow/utils
     container_name: core-engine
+    deploy:
+      restart_policy:
+       condition: any
+
 
   mosquitto:
     build: ./mosquitto
@@ -41,6 +53,10 @@ services:
       - ./mosquitto/data:/mosquitto/data
       - ./mosquitto/log:/mosquitto/log
     container_name: mosquitto
+    deploy:
+      restart_policy:
+       condition: any
+
 
   model:
     build: ./model
@@ -54,3 +70,6 @@ services:
       - ./model/trained_models:/opt/model/trained_models/
       - ./utils:/opt/model/utils
     container_name: model
+    deploy:
+      restart_policy:
+       condition: any
